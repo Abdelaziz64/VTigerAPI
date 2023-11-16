@@ -23,10 +23,19 @@ namespace WebApplication1.Controllers
         {
             // Validate input as needed
 
-            await _vtigerService.LoginAsync(username, accessKey);
+            bool loginSuccess = await _vtigerService.LoginAsync(username, accessKey);
+            
 
-            // Redirect to a different page or return a view
-            return RedirectToAction("Index", "Home");
+            if (loginSuccess)
+            {
+                // Redirect to a different page or return a view for successful login
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                // Return a view indicating login failure
+                return View("LoginFailed");
+            }
         }
     }
 }

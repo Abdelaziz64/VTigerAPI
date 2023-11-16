@@ -1,7 +1,10 @@
 ﻿using Newtonsoft.Json;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using WebApplication1.Models;
+
 
 namespace WebApplication1.Services
 {
@@ -25,16 +28,13 @@ namespace WebApplication1.Services
             return sBuilder.ToString();
         }
 
-        private async Task<T> VTigerGetJson<T>(string endpoint, string queryString, bool authenticate)
+        private async Task<T> VTigerPostJson<T>(string endpoint, Dictionary<string, string> parameters)
         {
             using (HttpClient client = new HttpClient())
             {
+                string apiUrl = $"https://demo.vtiger.com/vtigercrm/{endpoint}";
 
-                string apiUrl = $"https://demo.vtiger.com/vtigercrm/{endpoint}?{queryString}";
-
-
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-
+                HttpResponseMessage response = await client.PostAsync(apiUrl, new FormUrlEncodedContent(parameters));
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -44,28 +44,87 @@ namespace WebApplication1.Services
                 }
                 else
                 {
-
+                    // Handle the case where the POST request is not successful
                     return default(T);
                 }
             }
         }
+
         private async Task<VTigerToken> GetChallengeAsync(string username)
         {
-            return await VTigerGetJson<VTigerToken>("getchallenge", String.Format("username={0}", username), false);
+            using (HttpClient client = new HttpClient())
+            {
+                string apiUrl = $"https://demo.vtiger.com/vtigercrm/webservice.php?operation=getchallenge&username={username}";
+
+                HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    VTigerToken result = JsonConvert.DeserializeObject<VTigerToken>(jsonResponse);
+                    return result;
+                }
+                else
+                {
+                    // Handle the case where the GET request is not successful
+                    return null;
+                }
+            }
         }
 
-        public async Task LoginAsync(string username, string accessKey)
+        public async Task<bool> LoginAsync(string username, string accessKey)
         {
-            VTigerToken token = await GetChallengeAsync(username);
+            try
+            {
+                VTigerToken token = await GetChallengeAsync(username);
 
-            string key = GetMD5Hash(token.token + accessKey);
-//test
+                // Check if token is not null before accessing its properties
+                if (token != null)
+                {
+                    string key = GetMD5Hash(token.token + accessKey);
 
-            VTigerLogin loginResult = await VTigerGetJson<VTigerLogin>("login",
-                String.Format("username={0}&accessKey={1}", username, key), true);
+                    var loginParams = new Dictionary<string, string>
+            {
+                { "operation", "login" },
+                { "username", username },
+                { "accessKey", key }
+            };
 
+                    VTigerLogin loginResult = await VTigerPostJson<VTigerLogin>("webservice.php", loginParams);
 
+                    // Log the key
+                    Console.WriteLine($"Calculated Key: {key}");
+
+                    // Further processing with loginResult, if needed
+                    if (loginResult != null && loginResult.success)
+                    {
+                        // Successful login
+                        // Do something with the loginResult if needed
+                        return true;
+                    }
+                    else
+                    {
+                        // Log or display an error message indicating login failure
+                        Console.WriteLine("Login failed. Check the key and credentials.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Handle the case where the token is null
+                    // You might want to log an error or take appropriate action
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"An error occurred during login: {ex.Message}");
+                // Handle the exception, e.g., rethrow or log
+                return false;
+            }
         }
+
 
 
     }

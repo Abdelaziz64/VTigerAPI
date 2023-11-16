@@ -7,6 +7,9 @@
         public string version { get; set; }
         public string userId { get; set; }
 
+        public bool success { get; set; }
+        public VTigerLoginResult result { get; set; }
+
 
     }
 }

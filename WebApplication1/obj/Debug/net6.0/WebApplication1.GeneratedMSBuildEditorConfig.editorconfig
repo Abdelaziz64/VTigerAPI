@@ -20,10 +20,6 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/21265/Desktop/WebApplication1/WebApplication1/Views/Home/Login.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxMb2dpbi5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/21265/Desktop/WebApplication1/WebApplication1/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -38,6 +34,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/21265/Desktop/WebApplication1/WebApplication1/Views/VTiger/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXExvZ2luLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/21265/Desktop/WebApplication1/WebApplication1/Views/VTiger/LoginFailed.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXExvZ2luRmFpbGVkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/21265/Desktop/WebApplication1/WebApplication1/Views/_ViewImports.cshtml]
