@@ -11,6 +11,13 @@ namespace WebApplication1.Services
     public class VTigerService
 
     {
+
+        private string _sessionId;
+
+        public string GetSessionId()
+        {
+            return _sessionId;
+        }
         private static string GetMD5Hash(string input)
         {
             if ((input == null) || (input.Length == 0))
@@ -50,29 +57,93 @@ namespace WebApplication1.Services
             }
         }
 
+        private VTigerToken MapToVTigerToken(VTigerTokenResult result)
+        {
+            if (result == null)
+            {
+                return null;
+            }
+
+            return new VTigerToken
+            {
+                token = result.Token,
+                ServerTime = DateTimeOffset.FromUnixTimeSeconds(result.ServerTime).DateTime,
+                ExpireTime = DateTimeOffset.FromUnixTimeSeconds(result.ExpireTime).DateTime
+            };
+        }
+
         private async Task<VTigerToken> GetChallengeAsync(string username)
         {
             using (HttpClient client = new HttpClient())
             {
                 string apiUrl = $"https://demo.vtiger.com/vtigercrm/webservice.php?operation=getchallenge&username={username}";
 
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
+                try
+                {
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    string jsonResponse = await response.Content.ReadAsStringAsync();
-                    VTigerToken result = JsonConvert.DeserializeObject<VTigerToken>(jsonResponse);
-                    return result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+
+                        try
+                        {
+                            VTigerTokenResponse tokenResponse = JsonConvert.DeserializeObject<VTigerTokenResponse>(jsonResponse);
+
+                            if (tokenResponse != null && tokenResponse.Success)
+                            {
+                                return MapToVTigerToken(tokenResponse.Result);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error: Success is false in the response.");
+                                return null;
+                            }
+                        }
+                        catch (JsonException ex)
+                        {
+                            // Log the JSON deserialization error for debugging
+                            Console.WriteLine($"JSON Deserialization Error: {ex.Message}");
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        // Log the error or throw an exception for better debugging
+                        Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                        return null;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Handle the case where the GET request is not successful
+                    // Log or handle the exception
+                    Console.WriteLine($"Exception: {ex.Message}");
                     return null;
                 }
             }
         }
 
-        public async Task<bool> LoginAsync(string username, string accessKey)
+
+        private string sessionName;
+        public string SessionName
+        {
+            get { return sessionName; }
+        }
+
+        private string vtigerVersion;
+        public System.Version VTigerVersion
+        {
+            get { return new System.Version(vtigerVersion); }
+        }
+        private string userID;
+
+        public string UserID
+        {
+            get { return userID; }
+        }
+
+
+        public async Task LoginAsync(string username, string accessKey)
         {
             try
             {
@@ -90,36 +161,90 @@ namespace WebApplication1.Services
                 { "accessKey", key }
             };
 
-                    VTigerLogin loginResult = await VTigerPostJson<VTigerLogin>("webservice.php", loginParams);
 
-                    // Log the key
-                    Console.WriteLine($"Calculated Key: {key}");
+                    VTigerLogin loginResult = await VTigerPostJson<VTigerLogin>("webservice.php", loginParams);
 
                     // Further processing with loginResult, if needed
                     if (loginResult != null && loginResult.success)
                     {
                         // Successful login
                         // Do something with the loginResult if needed
-                        return true;
+                        Console.WriteLine("Login succeeded. Check the key and credentials.");
+
+                        // Store sessionName and vtigerVersion for later use
+                        sessionName = loginResult.sessionName;
+                        vtigerVersion = loginResult.vtigerVersion;
                     }
                     else
                     {
                         // Log or display an error message indicating login failure
                         Console.WriteLine("Login failed. Check the key and credentials.");
-                        return false;
+                        throw new Exception("Login failed. Check the key and credentials.");
                     }
                 }
                 else
                 {
                     // Handle the case where the token is null
                     // You might want to log an error or take appropriate action
-                    return false;
+                    Console.WriteLine("Token is null. Unable to perform login.");
+                    throw new Exception("Token is null. Unable to perform login.");
                 }
             }
             catch (Exception ex)
             {
                 // Log the exception
                 Console.WriteLine($"An error occurred during login: {ex.Message}");
+                // Handle the exception, e.g., rethrow or log
+                throw;
+            }
+        }
+
+
+        public async Task<bool> LogoutAsync()
+        {
+            try
+            {
+                // Check if the session ID is not null or empty
+                string sessionId = GetSessionId();
+                if (!string.IsNullOrEmpty(sessionId))
+                {
+                    var logoutParams = new Dictionary<string, string>
+                    {
+                        { "operation", "logout" },
+                        { "sessionName", sessionId }
+                    };
+
+                    VTigerLogout logoutResult = await VTigerPostJson<VTigerLogout>("webservice.php", logoutParams);
+
+
+
+                    // Further processing with logoutResult, if needed
+                    if (logoutResult != null && logoutResult.success)
+                    {
+                        // Successful logout
+                        // Do something with the logoutResult if needed
+                        _sessionId = null; // Clear the session ID after logout
+                        return true;
+                    }
+                    else
+                    {
+                        // Log or display an error message indicating logout failure
+                        Console.WriteLine("Logout failed. Check the session ID.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Handle the case where the session ID is null or empty
+                    // You might want to log an error or take appropriate action
+                    Console.WriteLine("Session ID is null or empty. Unable to perform logout.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"An error occurred during logout: {ex.Message}");
                 // Handle the exception, e.g., rethrow or log
                 return false;
             }
