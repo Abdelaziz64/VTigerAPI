@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -52,6 +53,7 @@ namespace WebApplication1.Services
                 }
                 else
                 {
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                     // Handle the case where the POST request is not successful
                     return default(T);
                 }
@@ -195,7 +197,72 @@ namespace WebApplication1.Services
                 // Handle the exception, e.g., rethrow or log
                 throw;
             }
+
+
         }
+        private async Task<T> Create<T>(VTigerContact element)
+        {
+            try
+            {
+                // Replace "Contacts" with the actual module name for contacts in your Vtiger CRM instance
+                string elementType = "Contacts";
+
+                // Serialize the VTigerContact object to JSON
+                string jsonData = JsonConvert.SerializeObject(element);
+                Console.WriteLine($"JSON Data sent to server: {jsonData}");
+
+                // Construct the parameters
+                Dictionary<string, string> parameters = new Dictionary<string, string>
+        {
+            { "operation", "create" },
+            { "sessionName", SessionID },
+            { "element", jsonData },
+            { "elementType", elementType },
+        };
+
+                // Send a POST request to the Vtiger CRM API
+                return await VTigerPostJson<T>("webservice.php", parameters);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"An error occurred while creating a contact: {ex.Message}");
+                // Handle the exception, e.g., rethrow or log
+                throw;
+            }
+        }
+
+        private string URLEncodeJsonData(VTigerContact contact)
+        {
+
+            string jsonData = JsonConvert.SerializeObject(contact);
+            Console.WriteLine($"JSON Data: {jsonData}");
+            string urlEncodedData = WebUtility.UrlEncode(jsonData);
+            return urlEncodedData;
+        }
+
+        public async Task<VTigerContact> AddContact(string firstname, string lastname, string assigned_user_id)
+        {
+            try
+            {
+                // Create a new VTigerContact instance
+                VTigerContact element = new VTigerContact(lastname.Trim(), assigned_user_id);
+                element.firstname = firstname;  // Set the firstname propert
+                return await Create<VTigerContact>(element);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"An error occurred while adding a contact: {ex.Message}");
+                // Handle the exception, e.g., rethrow or log
+                throw;
+            }
+        }
+
+        // ... existing code ...
+        //
+
+
     }
 
 }

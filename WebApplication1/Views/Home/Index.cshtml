@@ -3,6 +3,12 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h2>Welcome, @ViewBag.CurrentUser?.Username</h2>
+
+    @if (ViewBag.CurrentUser != null)
+    {
+        <form method="post" asp-action="Logout">
+            <button type="submit">Logout</button>
+        </form>
+    }
 </div>
