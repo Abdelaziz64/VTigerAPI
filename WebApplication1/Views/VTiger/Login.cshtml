@@ -4,24 +4,18 @@
 
 <h2>Login</h2>
 
-<form method="post" asp-action="Login">
-    <div>
-        <label for="username">Username:</label>
-        <input type="text" name="username" required />
-    </div>
-    <div>
-        <label for="accessKey">Access Key:</label>
-        <input type="password" name="accessKey" required />
-    </div>
-    <div>
-        <button type="submit">Login</button>
-    </div>
-</form>
 
-@if (User.Identity.IsAuthenticated)
-{
-    <!-- Display the logout button if the user is authenticated -->
-    <form asp-controller="VTiger" asp-action="Logout" method="post">
-        <button type="submit">Logout</button>
+    <form method="post" asp-action="Login">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" name="username" required />
+        </div>
+        <div>
+            <label for="accessKey">Access Key:</label>
+            <input type="password" name="accessKey" required />
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
     </form>
-}
+

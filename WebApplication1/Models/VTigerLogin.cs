@@ -2,14 +2,13 @@
 {
     public class VTigerLogin
     {
-        public string sessionName { get; set; }
-        public string vtigerVersion { get; set; }
-        public string version { get; set; }
-        public string userId { get; set; }
-
         public bool success { get; set; }
         public VTigerLoginResult result { get; set; }
 
+        // Add a property to directly access sessionName
+        public string sessionName => result?.sessionName;
 
+        // Add a property to directly access vtigerVersion
+        public string vtigerVersion => result?.vtigerVersion;
     }
 }

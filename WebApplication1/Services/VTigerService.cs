@@ -12,12 +12,12 @@ namespace WebApplication1.Services
 
     {
 
-        private string _sessionId;
-
-        public string GetSessionId()
+        public string SessionID
         {
-            return _sessionId;
+            get { return sessionName; }
         }
+
+
         private static string GetMD5Hash(string input)
         {
             if ((input == null) || (input.Length == 0))
@@ -46,6 +46,7 @@ namespace WebApplication1.Services
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"JSON Response: {jsonResponse}"); // Add this line
                     T result = JsonConvert.DeserializeObject<T>(jsonResponse);
                     return result;
                 }
@@ -56,7 +57,6 @@ namespace WebApplication1.Services
                 }
             }
         }
-
         private VTigerToken MapToVTigerToken(VTigerTokenResult result)
         {
             if (result == null)
@@ -71,7 +71,6 @@ namespace WebApplication1.Services
                 ExpireTime = DateTimeOffset.FromUnixTimeSeconds(result.ExpireTime).DateTime
             };
         }
-
         private async Task<VTigerToken> GetChallengeAsync(string username)
         {
             using (HttpClient client = new HttpClient())
@@ -123,7 +122,6 @@ namespace WebApplication1.Services
             }
         }
 
-
         private string sessionName;
         public string SessionName
         {
@@ -155,12 +153,11 @@ namespace WebApplication1.Services
                     string key = GetMD5Hash(token.token + accessKey);
 
                     var loginParams = new Dictionary<string, string>
-            {
-                { "operation", "login" },
-                { "username", username },
-                { "accessKey", key }
-            };
-
+                    {
+                        { "operation", "login" },
+                        { "username", username },
+                        { "accessKey", key }
+                    };
 
                     VTigerLogin loginResult = await VTigerPostJson<VTigerLogin>("webservice.php", loginParams);
 
@@ -175,6 +172,7 @@ namespace WebApplication1.Services
                         sessionName = loginResult.sessionName;
                         vtigerVersion = loginResult.vtigerVersion;
                     }
+
                     else
                     {
                         // Log or display an error message indicating login failure
@@ -198,59 +196,6 @@ namespace WebApplication1.Services
                 throw;
             }
         }
-
-
-        public async Task<bool> LogoutAsync()
-        {
-            try
-            {
-                // Check if the session ID is not null or empty
-                string sessionId = GetSessionId();
-                if (!string.IsNullOrEmpty(sessionId))
-                {
-                    var logoutParams = new Dictionary<string, string>
-                    {
-                        { "operation", "logout" },
-                        { "sessionName", sessionId }
-                    };
-
-                    VTigerLogout logoutResult = await VTigerPostJson<VTigerLogout>("webservice.php", logoutParams);
-
-
-
-                    // Further processing with logoutResult, if needed
-                    if (logoutResult != null && logoutResult.success)
-                    {
-                        // Successful logout
-                        // Do something with the logoutResult if needed
-                        _sessionId = null; // Clear the session ID after logout
-                        return true;
-                    }
-                    else
-                    {
-                        // Log or display an error message indicating logout failure
-                        Console.WriteLine("Logout failed. Check the session ID.");
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Handle the case where the session ID is null or empty
-                    // You might want to log an error or take appropriate action
-                    Console.WriteLine("Session ID is null or empty. Unable to perform logout.");
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                Console.WriteLine($"An error occurred during logout: {ex.Message}");
-                // Handle the exception, e.g., rethrow or log
-                return false;
-            }
-        }
-
-
-
     }
+
 }
