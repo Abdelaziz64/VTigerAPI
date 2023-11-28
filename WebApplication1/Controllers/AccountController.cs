@@ -23,8 +23,8 @@ public class VTigerController : Controller
         {
             await _vtigerService.LoginAsync(username, accessKey);
 
-            // If login is successful, redirect to the contact creation page
-            return RedirectToAction("CreateContact", new { username, accessKey });
+            // If login is successful, redirect to ManageContacts
+            return RedirectToAction("ManageContacts");
         }
         catch (Exception ex)
         {
@@ -36,26 +36,70 @@ public class VTigerController : Controller
         }
     }
 
-    // Action to create a contact
-
     public IActionResult CreateContact()
     {
         return View();
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateContact(string username, string accessKey, string firstname, string lastname, string assignedUserId)
+
+
+    public async Task<IActionResult> DisplayContacts()
     {
         try
         {
-            var sessionName = HttpContext.Session.GetString("SessionName");
-            var vtigerVersion = HttpContext.Session.GetString("VtigerVersion");
+            // Call the service to retrieve all contacts
+            List<VTigerContact> contacts = await _vtigerService.GetContacts();
+
+            if (contacts != null)
+            {
+                // Pass the list of contacts to the view
+                return View("DisplayContacts", contacts);
+            }
+            else
+            {
+                // Handle the case where contact retrieval failed
+                Console.WriteLine("Failed to retrieve contacts.");
+                return View("ContactRetrievalFailed");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception or handle it as needed
+            Console.WriteLine("Failed to retrieve contacts.");
+            return View("ContactRetrievalFailed");
+        }
+    }
+
+    public async Task<IActionResult> ManageContacts()
+    {
+        try
+        {
+            // Retrieve current contacts
+            List<VTigerContact> contacts = await _vtigerService.GetContacts();
+
+            // Pass the list of contacts to the view
+            return View("ManageContacts", contacts);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception or handle it as needed
+            Console.WriteLine($"Failed to retrieve or display contacts: {ex.Message}");
+            return View("ContactOperationFailed");
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ManageContacts(string username, string accessKey, string firstname, string lastname, string assignedUserId)
+    {
+        try
+        {
             // Call the service to add a contact
             VTigerContact addedContact = await _vtigerService.AddContact(firstname, lastname, assignedUserId);
+
             if (addedContact != null)
             {
-                // Redirect to a different page or return a view for successful contact addition
-                return RedirectToAction("ContactAdded", "Home");
+                // Redirect to the ManageContacts view
+                return RedirectToAction("ManageContacts");
             }
             else
             {
@@ -67,8 +111,8 @@ public class VTigerController : Controller
         catch (Exception ex)
         {
             // Log the exception or handle it as needed
-            Console.WriteLine($"Failed to add contact: {ex.Message}");
-            return View("ContactAdditionFailed");
+            Console.WriteLine($"Failed to add or display contacts: {ex.Message}");
+            return View("ContactOperationFailed");
         }
     }
 }

@@ -19,6 +19,12 @@ namespace WebApplication1.Services
             _sessionManager = sessionManager;
         }
 
+        public string GetDisplayContactsUrl()
+        {
+            // Construct the URL for the DisplayContacts view
+            return $"https://demo.vtiger.com/vtigercrm/webservice.php?operation=query&sessionName={_sessionManager.SessionName}&query=SELECT+*+FROM+DisplayContacts";
+        }
+
         public async Task LoginAsync(string username, string accessKey)
         {
             try
@@ -72,19 +78,62 @@ namespace WebApplication1.Services
             {
                 string apiUrl = $"https://demo.vtiger.com/vtigercrm/{endpoint}";
 
-                HttpResponseMessage response = await client.PostAsync(apiUrl, new FormUrlEncodedContent(parameters));
+                // Construct the query string
+                string queryString = string.Join("&", parameters.Select(p => $"{p.Key}={WebUtility.UrlEncode(p.Value)}"));
+
+                // Combine the API URL and query string
+                string fullUrl = $"{apiUrl}?{queryString}";
+
+                HttpResponseMessage response;
+
+                if (parameters.ContainsKey("operation") && ((parameters["operation"] == "login") || (parameters["operation"] == "create")))
+                {
+                    // For login operation, use POST with form data
+                    response = await client.PostAsync(apiUrl, new FormUrlEncodedContent(parameters));
+                }
+                else
+                {
+                    // For other operations, use GET
+                    response = await client.GetAsync(fullUrl);
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"JSON Response: {jsonResponse}");
-                    T result = JsonConvert.DeserializeObject<T>(jsonResponse);
-                    return result;
+
+                    try
+                    {
+                        // Attempt to deserialize as T directly
+                        T result = JsonConvert.DeserializeObject<T>(jsonResponse);
+                        return result;
+                    }
+                    catch (JsonSerializationException)
+                    {
+                        // If T is List<VTigerContact>, handle it accordingly
+                        if (typeof(T) == typeof(List<VTigerContact>))
+                        {
+                            var queryResponse = JsonConvert.DeserializeObject<VTigerQueryResponse<VTigerContact>>(jsonResponse);
+                            return (T)(object)queryResponse.result.ToList();
+                        }
+
+                        // Handle other cases where T is not directly deserializable
+                        try
+                        {
+                            var queryResponse = JsonConvert.DeserializeObject<T>(jsonResponse);
+                            return queryResponse;
+                        }
+                        catch (JsonException ex)
+                        {
+                            Console.WriteLine($"Error during deserialization: {ex.Message}");
+                            return default;
+                        }
+                    }
                 }
                 else
                 {
                     Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
-                    return default(T);
+                    return default;
                 }
             }
         }
@@ -216,5 +265,52 @@ namespace WebApplication1.Services
                 throw;
             }
         }
+
+        public async Task<List<VTigerContact>> GetContacts()
+        {
+            try
+            {
+                string query = "SELECT * FROM Contacts;";
+
+                var parameters = new Dictionary<string, string>
+        {
+            { "operation", "query" },
+            { "sessionName", _sessionManager.SessionName },
+            { "query", query }
+        };
+
+                VTigerQueryResponse<VTigerContact> queryResponse = await VTigerPostJson<VTigerQueryResponse<VTigerContact>>("webservice.php", parameters);
+
+                if (queryResponse != null)
+                {
+                    if (queryResponse.success)
+                    {
+                        return queryResponse.result;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Query failed. Response indicates failure. Check the error message.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Query failed. Response is null.");
+                }
+
+                // If there is an error or the response is null, return an empty list or handle it accordingly.
+                return new List<VTigerContact>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred during GetContacts: {ex.Message}");
+                throw;
+            }
+        }
+
+
+
+
+
     }
 }
+

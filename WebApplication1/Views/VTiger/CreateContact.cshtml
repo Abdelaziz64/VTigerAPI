@@ -6,6 +6,7 @@
 
 <h2>Create Contact</h2>
 
+<!-- Your form for creating a contact -->
 <form asp-action="CreateContact" method="post">
     <div class="form-group">
         <label asp-for="firstname">First Name:</label>
@@ -24,3 +25,8 @@
 
     <button type="submit" class="btn btn-primary">Create Contact</button>
 </form>
+
+    <form asp-action="DisplayContacts" asp-controller="VTiger" method="get">
+        <button type="submit">Display Contacts</button>
+    </form>
+

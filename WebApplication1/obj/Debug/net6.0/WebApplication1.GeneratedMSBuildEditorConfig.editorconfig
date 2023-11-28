@@ -40,6 +40,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXENyZWF0ZUNvbnRhY3QuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/21265/Desktop/VTigerAPI/WebApplication1/Views/VTiger/DisplayContacts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXERpc3BsYXlDb250YWN0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/21265/Desktop/VTigerAPI/WebApplication1/Views/VTiger/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXExvZ2luLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -50,6 +54,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/21265/Desktop/VTigerAPI/WebApplication1/Views/VTiger/LogoutFailed.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXExvZ291dEZhaWxlZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/21265/Desktop/VTigerAPI/WebApplication1/Views/VTiger/ManageContacts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVlRpZ2VyXE1hbmFnZUNvbnRhY3RzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/21265/Desktop/VTigerAPI/WebApplication1/Views/_ViewImports.cshtml]

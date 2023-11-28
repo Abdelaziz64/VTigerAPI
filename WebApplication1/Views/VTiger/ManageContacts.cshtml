@@ -1,0 +1,53 @@
+﻿@model List<VTigerContact>
+
+
+
+<!-- Form for adding new contacts -->
+<h2>Add New Contact</h2>
+<form asp-action="ManageContacts" method="post">
+    <!-- Add form fields for new contact details -->
+    <label for="firstname">First Name:</label>
+    <input type="text" name="firstname" required>
+
+    <label for="lastname">Last Name:</label>
+    <input type="text" name="lastname" required>
+
+    <label for="assignedUserId">Assigned User ID:</label>
+    <input type="text" name="assignedUserId" required>
+
+    <button type="submit">Add Contact</button>
+</form>
+
+
+<!-- Display existing contacts -->
+
+<h2>Contacts</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Assigned User ID</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Model)
+            {
+                <tr>
+                    <td>@contact.firstname</td>
+                    <td>@contact.lastname</td>
+                    <td>@contact.AssignedUserId</td>
+                    <!-- Add more columns as needed -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No contacts available.</p>
+}
