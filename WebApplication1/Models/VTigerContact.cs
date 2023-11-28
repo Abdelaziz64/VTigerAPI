@@ -12,15 +12,15 @@ namespace WebApplication1.Models
         public string lastname { get; set; }
 
         [JsonProperty("assigned_user_id")]
-        public string assigned_user_id { get; set; }
+        public string AssignedUserId { get; set; }
 
         // Additional properties as needed
 
         // Constructor to initialize required properties
-        public VTigerContact(string lastname, string assigned_user_id)
+        public VTigerContact(string lastname, string assignedUserId)
         {
             this.lastname = lastname;
-            this.assigned_user_id = assigned_user_id;
+            this.AssignedUserId = assignedUserId;
         }
 
         // Add other constructors or methods as needed

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using WebApplication1.Models;
 using WebApplication1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,7 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<VTigerService>();
+builder.Services.AddSingleton<SessionManager>();
 
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -23,6 +27,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseSession(); // Ensure this is placed here in the middleware pipeline.
 
 app.MapControllerRoute(
     name: "default",
