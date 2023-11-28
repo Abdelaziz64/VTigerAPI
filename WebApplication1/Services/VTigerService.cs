@@ -86,7 +86,7 @@ namespace WebApplication1.Services
 
                 HttpResponseMessage response;
 
-                if (parameters.ContainsKey("operation") && ((parameters["operation"] == "login") || (parameters["operation"] == "create")))
+                if (parameters.ContainsKey("operation") && ((parameters["operation"] == "login") || (parameters["operation"] == "create") || (parameters["operation"] == "delete")))
                 {
                     // For login operation, use POST with form data
                     response = await client.PostAsync(apiUrl, new FormUrlEncodedContent(parameters));
@@ -256,7 +256,7 @@ namespace WebApplication1.Services
             try
             {
                 VTigerContact element = new VTigerContact(lastname.Trim(), assigned_user_id);
-                element.firstname = firstname;
+                element.Firstname = firstname;
                 return await Create<VTigerContact>(element);
             }
             catch (Exception ex)
@@ -265,6 +265,38 @@ namespace WebApplication1.Services
                 throw;
             }
         }
+
+        public async Task<bool> DeleteContactAsync(string contactId)
+        {
+            try
+            {
+                var parameters = new Dictionary<string, string>
+        {
+            { "operation", "delete" },
+            { "sessionName", _sessionManager.SessionName },
+            { "id", contactId }
+        };
+
+                VTigerDeleteResponse deleteResponse = await VTigerPostJson<VTigerDeleteResponse>("webservice.php", parameters);
+
+                if (deleteResponse != null && deleteResponse.success)
+                {
+                    Console.WriteLine($"Contact with ID {contactId} deleted successfully.");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to delete contact with ID {contactId}.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred during contact deletion: {ex.Message}");
+                throw;
+            }
+        }
+
 
         public async Task<List<VTigerContact>> GetContacts()
         {

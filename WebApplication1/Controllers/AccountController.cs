@@ -115,4 +115,32 @@ public class VTigerController : Controller
             return View("ContactOperationFailed");
         }
     }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteContact(string contactId)
+    {
+        try
+        {
+            bool deleteResult = await _vtigerService.DeleteContactAsync(contactId);
+
+            if (deleteResult)
+            {
+                // Redirect to the ManageContacts view after successful deletion
+                return RedirectToAction("ManageContacts");
+            }
+            else
+            {
+                // Handle the case where contact deletion failed
+                Console.WriteLine($"Failed to delete contact with ID {contactId}.");
+                return View("ContactDeletionFailed");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception or handle it as needed
+            Console.WriteLine($"Failed to delete contact: {ex.Message}");
+            return View("ContactDeletionFailed");
+        }
+    }
+
 }
