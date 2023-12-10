@@ -86,7 +86,7 @@ namespace WebApplication1.Services
 
                 HttpResponseMessage response;
 
-                if (parameters.ContainsKey("operation") && ((parameters["operation"] == "login") || (parameters["operation"] == "create") || (parameters["operation"] == "delete")))
+                if (parameters.ContainsKey("operation") && ((parameters["operation"] == "login") || (parameters["operation"] == "create") || (parameters["operation"] == "delete") || (parameters["operation"] == "update")))
                 {
                     // For login operation, use POST with form data
                     response = await client.PostAsync(apiUrl, new FormUrlEncodedContent(parameters));
@@ -338,6 +338,87 @@ namespace WebApplication1.Services
                 throw;
             }
         }
+
+        public async Task<bool> UpdateContactAsync(string contactId, string newFirstName, string newLastName)
+        {
+            try
+            {
+                // Retrieve the contact details first
+                VTigerContact existingContact = await GetContactByIdAsync(contactId);
+
+                if (existingContact != null)
+                {
+                    // Update the first name and last name
+                    existingContact.Firstname = newFirstName;
+                    existingContact.Lastname = newLastName;
+
+                    // Perform the update operation
+                    var parameters = new Dictionary<string, string>
+            {
+                { "operation", "update" },
+                { "sessionName", _sessionManager.SessionName },
+                { "element", JsonConvert.SerializeObject(existingContact) },
+                { "elementType", "Contacts" }
+            };
+
+                    VTigerUpdateResponse updateResponse = await VTigerPostJson<VTigerUpdateResponse>("webservice.php", parameters);
+
+                    if (updateResponse != null && updateResponse.success)
+                    {
+                        Console.WriteLine($"Contact with ID {contactId} updated successfully.");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to update contact with ID {contactId}.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Contact with ID {contactId} not found.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred during contact update: {ex.Message}");
+                throw;
+            }
+        }
+
+        private async Task<VTigerContact> GetContactByIdAsync(string contactId)
+        {
+            try
+            {
+                // Query to get the contact by ID
+                string query = $"SELECT * FROM Contacts WHERE id='{contactId}';";
+
+                var parameters = new Dictionary<string, string>
+        {
+            { "operation", "query" },
+            { "sessionName", _sessionManager.SessionName },
+            { "query", query }
+        };
+
+                VTigerQueryResponse<VTigerContact> queryResponse = await VTigerPostJson<VTigerQueryResponse<VTigerContact>>("webservice.php", parameters);
+
+                if (queryResponse != null && queryResponse.success && queryResponse.result.Count > 0)
+                {
+                    return queryResponse.result[0]; // Assuming there's only one contact with the given ID
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred during GetContactById: {ex.Message}");
+                throw;
+            }
+        }
+
 
 
 

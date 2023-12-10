@@ -115,6 +115,33 @@ public class VTigerController : Controller
             return View("ContactOperationFailed");
         }
     }
+    [HttpPost]
+    public async Task<IActionResult> UpdateContact(string contactId, string newFirstName, string newLastName)
+    {
+        try
+        {
+            bool updateResult = await _vtigerService.UpdateContactAsync(contactId, newFirstName, newLastName);
+
+            if (updateResult)
+            {
+                // Redirect to the ManageContacts view after successful update
+                return RedirectToAction("ManageContacts");
+            }
+            else
+            {
+                // Handle the case where contact update failed
+                Console.WriteLine($"Failed to update contact with ID {contactId}.");
+                return View("ContactUpdateFailed");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception or handle it as needed
+            Console.WriteLine($"Failed to update contact: {ex.Message}");
+            return View("ContactUpdateFailed");
+        }
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> DeleteContact(string contactId)
